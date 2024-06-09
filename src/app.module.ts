@@ -21,7 +21,7 @@ import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
-    // mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/
+    // mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/ecommerce
     // mongodb://0.0.0.0:27017/ecommerce
     MongooseModule.forRoot('mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/ecommerce'), 
     // TelegramClient.forRootAsync({
