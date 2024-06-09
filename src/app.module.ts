@@ -7,11 +7,23 @@ import { UsersModule } from './users/users.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { OrdersModule } from './orders/orders.module';
-import { TelegramClient } from 'nestjs-telegram-bot';
+
+// dacotaperriert@gmail.com
+// mdemierda023
+
+// dacotaperriert@gmail.com
+// mdemierda023
+
+// dacotaperriert
+// fjvDprtodDwZGyYt
+
+
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://0.0.0.0:27017/ecommerce'), 
+    // mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/
+    // mongodb://0.0.0.0:27017/ecommerce
+    MongooseModule.forRoot('mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/ecommerce'), 
     // TelegramClient.forRootAsync({
     //   inject: [],
     //   useFactory: async () => ({
