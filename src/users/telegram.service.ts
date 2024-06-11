@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { IMessage } from './telegram.interface';
 import { GlobalMessage } from './globalMsg.interface';
 import { createWriteStream } from 'fs';
@@ -10,7 +10,7 @@ const TELEGRAM_TOKEN = '7240720904:AAGEDxkL8ucdMKOB6w5LjiPau0W9vL8aBfA';
 const fs = require('fs').promises;
 
 @Injectable()
-export class TelegramBotService {
+export class TelegramBotService implements OnModuleDestroy{
   private readonly bot: any;
   // private readonly bot:TelegramBot // works after installing types
   private logger = new Logger(TelegramBotService.name);
@@ -25,7 +25,6 @@ export class TelegramBotService {
     @InjectModel('user')
     private readonly userModel: Model<UserDocument>,
   ) {
-    
     this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 
     this.bot.on('message', this.onReceiveMessage);
@@ -261,5 +260,13 @@ export class TelegramBotService {
     } catch (error) {
       console.error(`Error al eliminar el archivo: ${error}`);
     }
+  }
+
+  onModuleDestroy() {
+    this.bot.stopPolling().then(() => {
+      this.logger.debug('Instancia de TelegramBot destruida');
+    }).catch((error) => {
+      this.logger.error('Error al detener el polling:', error);
+    });
   }
 }
