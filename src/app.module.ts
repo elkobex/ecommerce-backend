@@ -18,7 +18,6 @@ import { OrdersModule } from './orders/orders.module';
 // fjvDprtodDwZGyYt
 
 
-
 @Module({
   imports: [
     // mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/ecommerce
@@ -33,7 +32,6 @@ import { OrdersModule } from './orders/orders.module';
     ProductsModule, 
     UsersModule,
     OrdersModule,
-    // TelegramBotModule,
     ServeStaticModule.forRoot({
       // rootPath: join(__dirname, '..', 'src', 'public'),
       rootPath: join(__dirname, '..', 'src/public'),
