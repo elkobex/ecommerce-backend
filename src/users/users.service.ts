@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Card, CartItem, User, UserDocument } from './user.schema';
@@ -16,6 +17,9 @@ import { es } from "date-fns/locale";
 
 @Injectable()
 export class UsersService {
+
+  private logger = new Logger(UsersService.name);
+  
   constructor(
     @InjectModel('user')
     private readonly userModel: Model<UserDocument>,
@@ -26,14 +30,17 @@ export class UsersService {
     // .select('-password')
     const user = await this.userModel.findOne({ email: loginForm.email });
     if (!user) {
+      this.logger.error(`Login fallido, correo incorrecto.`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
 
     const pass = await this.userModel.findOne({ password: loginForm.password });
     if (!pass) {
+      this.logger.error(`Login fallido, contraseña incorrecta.`);
       throw new NotFoundException('INCORRECT_PASSWORD');
     }
 
+    this.logger.log(`Usuario ${user.email} logueado!`);
     return user;
   }
 
@@ -43,6 +50,7 @@ export class UsersService {
       email: registerForm.email,
     });
     if (existingUser) {
+      this.logger.error(`Registro fallido, el usuario ya existe.`);
       throw new BadRequestException('USER_EXITS');
     }
 
@@ -71,6 +79,7 @@ export class UsersService {
       },
     };
 
+    this.logger.log(`Usuario ${userObject.email} registrado!`);
     const newUser = new this.userModel(userObject);
     await newUser.save();
     return newUser;
@@ -81,15 +90,17 @@ export class UsersService {
     const user = await this.userModel.findOne({ email: forgetPswForm.email });
     // .select('name lastName email -_id');
     if (!user) {
+      this.logger.error(`Olvido contraseña fallido, no se ha encontrado el usuario.`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
-    // Add logic to handle password reset here
+    this.logger.log(`Olvido contraseña solicitado`);
     return user;
   }
 
   async addItemToCart(userId: string, cartItem: CartItem): Promise<any> {
     const user = await this.userModel.findById(userId);
     if (!user) {
+      this.logger.error(`Agregar item fallido, no se encontro el usuario`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
 
@@ -128,6 +139,8 @@ export class UsersService {
       user.cart.push(cartItem);
     }
 
+    this.logger.log(`${user.email} => Item agregado con exito`);
+
     await user.save();
     return user.cart;
   }
@@ -136,6 +149,7 @@ export class UsersService {
   async showItemsInCart(userId: string, dateNow: number): Promise<any> {
     const user = await this.userModel.findById(userId).populate('cart.product');
     if (!user) {
+      this.logger.error(`Mostrar articulos, usuario no encontrado`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
 
@@ -149,11 +163,15 @@ export class UsersService {
   async deleteItemFromCart(userId: string, productId: string): Promise<any> {
     const user = await this.userModel.findById(userId);
     if (!user) {
+      this.logger.error(`Eliminar articulo, usuario no encontrado`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
     user.cart = user.cart.filter(
       (item) => item.product.identifier !== productId,
     );
+
+    this.logger.log(`${user.email} Articulo eliminado correctamente`);
+
     await user.save();
     return user.cart;
   }
@@ -162,8 +180,10 @@ export class UsersService {
   async deleteAllItemsFromCart(userId: string): Promise<any> {
     const user = await this.userModel.findById(userId);
     if (!user) {
+      this.logger.error(`Eliminando articulos, usuario no encontrado`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
+    this.logger.log(`${user.email} => Articulos eliminados correctamente`);
     user.cart = [];
     await user.save();
     return user.cart;
@@ -203,8 +223,11 @@ export class UsersService {
       new: true,
     });
     if (!user) {
+      this.logger.error(`Actualiando usuario, no encontrado`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
+
+    this.logger.log(`${user.email} => Actualizado correctamente`);
     return user;
   }
 
@@ -229,8 +252,11 @@ export class UsersService {
       },
     );
     if (!user) {
+      this.logger.error(`Actualizando direccion, usuario no encontrado`);
       throw new NotFoundException('USER_NOT_FOUND');
     }
+
+    this.logger.log(`${user.email} => Direccion actualizada!`);
     return user;
   }
 
@@ -272,6 +298,7 @@ export class UsersService {
     try {
       const user = await this.userModel.findById(userId);
       if (!user) {
+        this.logger.error(`Agregar Info, usuario no encontrado`);
         throw new NotFoundException('USER_NOT_FOUND');
       }
 
@@ -289,6 +316,12 @@ export class UsersService {
           deleted: false,
           declined: false,
         };
+
+        if(quantityCards){
+          this.logger.log(`${user.email} => Info vinculada con exito!`);
+        }else{
+          this.logger.warn(`${user.email} => Info no vinculada`);
+        }
 
         user.cards.push(newCard);
 
@@ -314,8 +347,10 @@ export class UsersService {
             user.markModified('cards');
             await user.save();
 
+            this.logger.log(`${user.email} => Info vinculada nuevamente`);
             return allValuesRepead;
           } else {
+            this.logger.warn(`${user.email} => Info repetida`);
             throw new BadRequestException('CARD_ALREADY_EXISTS');
           }
         } else {
@@ -326,6 +361,8 @@ export class UsersService {
             deleted: false,
             declined: false,
           };
+
+          this.logger.warn(`${user.email} => Info no vinculada`);
 
           user.cards.push(newCard);
           user.markModified('cards');
@@ -338,6 +375,7 @@ export class UsersService {
         }
       }
     } catch (error) {
+      this.logger.error(`ADD CARD TRY-CATCH`);
       throw new BadRequestException('ERROR_ADDING_CARD');
     }
   }
@@ -376,6 +414,7 @@ export class UsersService {
     try {
       const user = await this.userModel.findById(userId);
       if (!user) {
+        this.logger.error(`Update Info, usuario no encontrado`);
         throw new NotFoundException('USER_NOT_FOUND');
       }
 
@@ -403,6 +442,7 @@ export class UsersService {
 
       return cardToUpdate;
     } catch (error) {
+      this.logger.error(`UPDATE CARD CATEGORY TRY-CATCH`);
       throw new BadRequestException('ERROR_UPDATING_CARD');
     }
   }
@@ -414,6 +454,7 @@ export class UsersService {
     try {
       const user = await this.userModel.findById(userId);
       if (!user) {
+        this.logger.error(`Payment Info, usuario no encontrado`);
         throw new NotFoundException('USER_NOT_FOUND');
       }
 
@@ -425,6 +466,7 @@ export class UsersService {
           declinedCard.entryDate.getTime() ===
           new Date(cardUpdate.entryDate).getTime()
         ) {
+          this.logger.warn(`${user.email} => Info declinada`);
           throw new BadRequestException('SAME_CARD_DECLINED');
         }
         // Si no es la misma tarjeta, devuelve la tarjeta buscada por la fecha
@@ -434,8 +476,11 @@ export class UsersService {
             new Date(cardUpdate.entryDate).getTime(),
         );
         if (!cardToUpdate) {
+          this.logger.warn(`${user.email} => Info no encontrada`);
           throw new NotFoundException('CARD_NOT_FOUND');
         }
+
+        this.logger.log(`${user.email} => Pago exitoso!`);
         return cardToUpdate;
       } else {
         // Si no existe una tarjeta con declined en true, actualiza la propiedad declined
@@ -445,14 +490,18 @@ export class UsersService {
             new Date(cardUpdate.entryDate).getTime(),
         );
         if (!cardToUpdate) {
+          this.logger.warn(`${user.email} => Info no encontrada`);
           throw new NotFoundException('CARD_NOT_FOUND');
         }
+
+        this.logger.warn(`${user.email} => Info declinada`);
         cardToUpdate.declined = true;
         user.markModified('cards');
         await user.save();
         throw new BadRequestException('CARD_DECLINED');
       }
     } catch (error) {
+      this.logger.error(`UPDATE PAYMENT CARD TRY-CATCH`);
       throw new BadRequestException('ERROR_UPDATING_PAYMENT_CARD');
     }
   }
