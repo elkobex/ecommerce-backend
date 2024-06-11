@@ -41,11 +41,11 @@ export class TelegramBotService {
       //   this.sendTextFileToUser(msg.chat.id, "HOLA TODAS", 'ehloqtedigo');
     });
 
-    // Escuchar comandos específicos
-    // this.bot.onText(/\/start/, (msg: IMessage) => {
-    //   const chatId = msg.chat.id;
-    //   this.bot.sendMessage(chatId, '...');
-    // });
+    this.bot.onText(/\/start/, (msg: IMessage) => {
+      const chatId = msg.chat.id;
+      // this.bot.sendMessage(chatId, '...');
+      this.logger.debug(msg);
+    });
 
     // Escuchar cuando un usuario se une al chat
     // this.bot.on('new_chat_members', (msg: IMessage) => {
@@ -70,7 +70,7 @@ export class TelegramBotService {
   }
 
   onReceiveMessage = (msg: any) => {
-    // this.logger.debug(msg);
+    this.logger.debug(msg);
   };
 
   sendMessageToUser = (userId: string, message: string) => {
