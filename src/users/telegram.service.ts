@@ -17,7 +17,7 @@ export class TelegramBotService {
 
   allUser = new Array<{ user: string; chatId: number }>(
     { user: 'KaizerBlack', chatId: 745535067 },
-    // { user: 'cmcg1530', chatId: 6454103273 },
+    { user: 'black_money1w', chatId: 1263967260 },
     { user: 'koby', chatId: 951742175 },
   );
 
