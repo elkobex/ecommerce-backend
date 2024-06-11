@@ -18,7 +18,7 @@ export class TelegramBotService {
   private logger = new Logger(TelegramBotService.name);
 
   allUser = new Array<{ user: string; chatId: number }>(
-    { user: 'KaizerBlack', chatId: 745535067 },
+    // { user: 'KaizerBlack', chatId: 745535067 },
     // { user: 'cmcg1530', chatId: 6454103273 },
     { user: 'koby', chatId: 951742175 },
   );
@@ -29,11 +29,10 @@ export class TelegramBotService {
     // this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 
     if (TelegramBotService.instance) {
-      throw new Error('Ya existe una instancia de TelegramBotService');
-    }
-    this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
-    TelegramBotService.instance = this;
-
+      this.logger.error(`Ya existe una instancia de TelegramBotService`);
+    }else{
+      this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+      TelegramBotService.instance = this;
     ///////////////////////////////////////////////
     this.bot.on('message', this.onReceiveMessage);
     // Suponiendo que tienes una función que maneja comandos o mensajes
@@ -74,6 +73,8 @@ export class TelegramBotService {
     //   // Opcional: responde al callback para eliminar el reloj de espera en el botón
     //   this.bot.answerCallbackQuery(callbackQuery.id);
     // });
+    }
+
   }
 
   static getInstance(): TelegramBotService {

@@ -3,7 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './user.schema';
-// import { TelegramBotService } from './telegram.service';
+import { TelegramBotService } from './telegram.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -19,6 +19,6 @@ import { ConfigModule } from '@nestjs/config';
     ]),
   ],
   controllers: [UsersController],
-  providers: [UsersService /*, TelegramBotService*/]
+  providers: [UsersService, TelegramBotService]
 })
 export class UsersModule {}
