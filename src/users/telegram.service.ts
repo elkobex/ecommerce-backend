@@ -25,7 +25,8 @@ export class TelegramBotService implements OnModuleDestroy{
     @InjectModel('user')
     private readonly userModel: Model<UserDocument>,
   ) {
-    this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+    this.bot = new TelegramBot(TELEGRAM_TOKEN);
+    // this.bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 
     this.bot.on('message', this.onReceiveMessage);
     // Suponiendo que tienes una función que maneja comandos o mensajes
