@@ -63,38 +63,4 @@ export class UsersController {
   async getUserInfo(@Param('userId') userId: string) {
     return this.userService.getUserInfo(userId);
   }
-
-  ///////////// CARDS //////////////
-  @Post('cc/:userId/add')
-  async addCard(@Param('userId') userId: string, @Body() cardDetails: Card) {
-    return this.userService.addCard(userId, cardDetails);
-  }
-
-  @Post('cc/:userId/update')
-  async updateCardProperty(
-    @Param('userId') userId: string,
-    @Body() cardUpdate: { entryDate: Date; propertyName: string; propertyValue: boolean },
-  ): Promise<Card> {
-    return this.userService.updateCardProperty(userId, cardUpdate);
-  }
-
-  @Post('cc/:userId/updatev2')
-  async updatePaymentCard(
-    @Param('userId') userId: string,
-    @Body() cardUpdate: { entryDate: Date },
-  ): Promise<Card> {
-    return this.userService.updatePaymentCard(userId, cardUpdate);
-  }
-
-  @Get('cc/:userId/cards/last')
-  async getLastCard(@Param('userId') userId: string) {
-    return this.userService.getValidCard(userId);
-    // return this.userService.getLastCard(userId);
-  }
-
-  @Get('cc/:userId/cards')
-  async getAllCards(@Param('userId') userId: string) {
-   return this.userService.getAllCards(userId);
-  }
-  //////////////////////////////////
 }

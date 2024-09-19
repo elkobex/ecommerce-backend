@@ -8,36 +8,15 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { OrdersModule } from './orders/orders.module';
 
-// dacotaperriert@gmail.com
-// mdemierda023
-
-// dacotaperriert@gmail.com
-// mdemierda023
-
-// dacotaperriert
-// fjvDprtodDwZGyYt
-
-
 @Module({
   imports: [
-    // mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/ecommerce
-    // mongodb://0.0.0.0:27017/ecommerce
-    MongooseModule.forRoot('mongodb+srv://dacotaperriert:fjvDprtodDwZGyYt@ecommerce.yfvcx9i.mongodb.net/ecommerce'), 
-    // TelegramClient.forRootAsync({
-    //   inject: [],
-    //   useFactory: async () => ({
-    //     token: '7240720904:AAGEDxkL8ucdMKOB6w5LjiPau0W9vL8aBfA',
-    //   }),
-    // }),
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce'),
     ProductsModule, 
     UsersModule,
     OrdersModule,
     ServeStaticModule.forRoot({
-      // rootPath: join(__dirname, '..', 'src', 'public'),
       rootPath: join(__dirname, '..', 'src/public'),
-    }),
-    // OrdersModule,
-    // TelegramModule,
+    })
   ],
   controllers: [AppController],
   providers: [AppService],

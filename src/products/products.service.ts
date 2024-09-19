@@ -117,6 +117,7 @@ export class ProductsService {
         totalPages: Math.ceil(count / limit),
       };
     } catch (error) {
+      console.log(error);
       return this.sendHttpExceptionError(error);
     }
   }
