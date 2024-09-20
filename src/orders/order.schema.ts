@@ -23,7 +23,7 @@ export class CartItem {
     originalPrice: number;
     sizes?: string[];
     size?: string | null;
-    color?: { id: string; title: string; imagen: string } | null;
+    color?: { id: string; title: string; imagen: string } | null
   };
 
   @Prop({ required: true })
